@@ -26,4 +26,9 @@
     <string name="close_button">Schließen</string>
     <string name="focus_content_description">Fokuspunkt</string>
     <string name="reticle_content_description">Fokus-Retikel</string>
+    <string name="front_camera_content_description">Kamera wechseln</string>
+    <string name="reading_line_content_description">Leselinie</string>
+    <string name="filter_none_label">Normal</string>
+    <string name="filter_grayscale_label">S/W</string>
+    <string name="filter_inverted_label">Invertiert</string>
 </resources>

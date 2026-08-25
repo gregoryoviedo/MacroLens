@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,6 +18,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.Canvas
@@ -41,10 +43,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.HorizontalRule
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
@@ -72,7 +76,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
@@ -167,6 +174,12 @@ fun MagnifierScreen(viewModel: MagnifierViewModel = viewModel()) {
         }
     }
 
+    LaunchedEffect(state.lastFocusEventId) {
+        if (state.lastFocusEventId > 0 && state.lastFocusSuccess == true) {
+            localView.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -178,22 +191,42 @@ fun MagnifierScreen(viewModel: MagnifierViewModel = viewModel()) {
                 viewModel = viewModel,
                 onPinchZoom = viewModel::onPinchZoom
             )
-            FreezeOverlay(image = state.frozenImage, isFrozen = state.isFrozen)
+            ReadingLineOverlay(
+                enabled = state.isReadingLineEnabled,
+                fraction = state.readingLineFraction,
+                onFractionChange = viewModel::setReadingLineFraction
+            )
+            FreezeOverlay(
+                image = state.frozenImage,
+                isFrozen = state.isFrozen,
+                filter = state.freezeFilter
+            )
             FocusReticle(
                 point = state.focusPoint,
                 isFocusing = state.isFocusing,
                 onFinished = viewModel::clearFocusIndicator
             )
-            ZoomLabelAndSlider(
-                zoom = state.zoom,
-                ratio = state.currentZoomRatio,
-                onZoomChange = viewModel::onZoomChange,
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(start = 24.dp, end = 24.dp, bottom = 24.dp)
-            )
+                    .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (state.isFrozen) {
+                    FreezeFilterChips(
+                        current = state.freezeFilter,
+                        onSelect = viewModel::setFreezeFilter
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+                ZoomLabelAndSlider(
+                    zoom = state.zoom,
+                    ratio = state.currentZoomRatio,
+                    onZoomChange = viewModel::onZoomChange
+                )
+            }
             state.error?.let { cameraError ->
                 CameraErrorBanner(
                     error = cameraError,
@@ -205,6 +238,10 @@ fun MagnifierScreen(viewModel: MagnifierViewModel = viewModel()) {
             TopControlBar(
                 state = state,
                 onToggleTorch = viewModel::toggleTorch,
+                onToggleCamera = viewModel::toggleCamera,
+                onToggleReadingLine = {
+                    viewModel.setReadingLineEnabled(!state.isReadingLineEnabled)
+                },
                 onToggleFreeze = viewModel::toggleFreeze,
                 onMoreClick = { showSheet = true },
                 modifier = Modifier
@@ -295,6 +332,69 @@ private fun CameraLayer(
 }
 
 @Composable
+private fun ReadingLineOverlay(
+    enabled: Boolean,
+    fraction: Float,
+    onFractionChange: (Float) -> Unit
+) {
+    if (!enabled) return
+    val description = stringResource(R.string.reading_line_content_description)
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .semantics { contentDescription = description }
+            .pointerInput(Unit) {
+                detectDragGestures { change, _ ->
+                    change.consume()
+                    onFractionChange(change.position.y / size.height)
+                }
+            }
+            .pointerInput(Unit) {
+                detectTapGestures { offset ->
+                    onFractionChange(offset.y / size.height)
+                }
+            }
+    ) {
+        val y = (fraction.coerceIn(0f, 1f)) * size.height
+        val handleRadius = 18.dp.toPx()
+        val handleWidth = 56.dp.toPx()
+        val strokeWidth = 2.dp.toPx()
+        val shadowStrokeWidth = 4.dp.toPx()
+
+        drawLine(
+            color = Color.Black.copy(alpha = 0.6f),
+            start = Offset(0f, y),
+            end = Offset(size.width, y),
+            strokeWidth = shadowStrokeWidth
+        )
+        drawLine(
+            color = Color.White.copy(alpha = 0.9f),
+            start = Offset(0f, y),
+            end = Offset(size.width, y),
+            strokeWidth = strokeWidth
+        )
+
+        val centerX = size.width / 2f
+        drawCircle(
+            color = Color.Black.copy(alpha = 0.6f),
+            radius = handleRadius + 1.dp.toPx(),
+            center = Offset(centerX, y)
+        )
+        drawCircle(
+            color = Color.White,
+            radius = handleRadius,
+            center = Offset(centerX, y)
+        )
+        drawLine(
+            color = Color.Black.copy(alpha = 0.8f),
+            start = Offset(centerX - handleWidth / 4f, y),
+            end = Offset(centerX + handleWidth / 4f, y),
+            strokeWidth = 2.dp.toPx()
+        )
+    }
+}
+
+@Composable
 private fun FocusReticle(
     point: androidx.compose.ui.geometry.Offset?,
     isFocusing: Boolean,
@@ -351,14 +451,92 @@ private fun CameraErrorBanner(
 @Composable
 private fun FreezeOverlay(
     image: ImageBitmap?,
-    isFrozen: Boolean
+    isFrozen: Boolean,
+    filter: FreezeFilter
 ) {
     if (isFrozen && image != null) {
+        val colorFilter = when (filter) {
+            FreezeFilter.NONE -> null
+            FreezeFilter.GRAYSCALE -> ColorFilter.colorMatrix(GrayscaleMatrix)
+            FreezeFilter.INVERTED -> ColorFilter.colorMatrix(InvertedMatrix)
+        }
         Image(
             bitmap = image,
             contentDescription = stringResource(R.string.freeze_content_description),
             contentScale = ContentScale.Crop,
+            colorFilter = colorFilter,
             modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+private val GrayscaleMatrix = ColorMatrix(
+    floatArrayOf(
+        0.299f, 0.587f, 0.114f, 0f, 0f,
+        0.299f, 0.587f, 0.114f, 0f, 0f,
+        0.299f, 0.587f, 0.114f, 0f, 0f,
+        0f, 0f, 0f, 1f, 0f
+    )
+)
+
+private val InvertedMatrix = ColorMatrix(
+    floatArrayOf(
+        -1f, 0f, 0f, 0f, 1f,
+        0f, -1f, 0f, 0f, 1f,
+        0f, 0f, -1f, 0f, 1f,
+        0f, 0f, 0f, 1f, 0f
+    )
+)
+
+@Composable
+private fun FreezeFilterChips(
+    current: FreezeFilter,
+    onSelect: (FreezeFilter) -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FilterChip(
+            label = stringResource(R.string.filter_none_label),
+            selected = current == FreezeFilter.NONE,
+            onClick = { onSelect(FreezeFilter.NONE) }
+        )
+        FilterChip(
+            label = stringResource(R.string.filter_grayscale_label),
+            selected = current == FreezeFilter.GRAYSCALE,
+            onClick = { onSelect(FreezeFilter.GRAYSCALE) }
+        )
+        FilterChip(
+            label = stringResource(R.string.filter_inverted_label),
+            selected = current == FreezeFilter.INVERTED,
+            onClick = { onSelect(FreezeFilter.INVERTED) }
+        )
+    }
+}
+
+@Composable
+private fun FilterChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val containerColor = if (selected) {
+        Color.White.copy(alpha = 0.28f)
+    } else {
+        GlassBackground
+    }
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = containerColor,
+        contentColor = Color.White,
+        border = GlassBorder,
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
         )
     }
 }
@@ -415,6 +593,8 @@ private fun ZoomLabelAndSlider(
 private fun TopControlBar(
     state: MagnifierUiState,
     onToggleTorch: () -> Unit,
+    onToggleCamera: () -> Unit,
+    onToggleReadingLine: () -> Unit,
     onToggleFreeze: () -> Unit,
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -423,13 +603,36 @@ private fun TopControlBar(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        GlassFab(
+            onClick = onToggleReadingLine,
+            contentDescription = stringResource(R.string.reading_line_content_description),
+            isActive = state.isReadingLineEnabled
+        ) {
+            Icon(
+                imageVector = Icons.Filled.HorizontalRule,
+                contentDescription = null
+            )
+        }
         if (state.hasFlashUnit) {
             GlassFab(
                 onClick = onToggleTorch,
-                contentDescription = stringResource(R.string.torch_content_description)
+                contentDescription = stringResource(R.string.torch_content_description),
+                isActive = state.isTorchOn
             ) {
                 Icon(
                     imageVector = if (state.isTorchOn) Icons.Filled.FlashOn else Icons.Filled.FlashOff,
+                    contentDescription = null
+                )
+            }
+        }
+        if (state.supportsFrontCamera) {
+            GlassFab(
+                onClick = onToggleCamera,
+                contentDescription = stringResource(R.string.front_camera_content_description),
+                isActive = state.useFrontCamera
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Cameraswitch,
                     contentDescription = null
                 )
             }
@@ -440,7 +643,8 @@ private fun TopControlBar(
                 stringResource(R.string.resume_content_description)
             } else {
                 stringResource(R.string.freeze_content_description)
-            }
+            },
+            isActive = state.isFrozen
         ) {
             Icon(
                 imageVector = if (state.isFrozen) Icons.Filled.PlayArrow else Icons.Filled.Pause,
@@ -463,11 +667,17 @@ private fun TopControlBar(
 private fun GlassFab(
     onClick: () -> Unit,
     contentDescription: String,
+    isActive: Boolean = false,
     icon: @Composable () -> Unit
 ) {
+    val containerColor = if (isActive) {
+        Color.White.copy(alpha = 0.28f)
+    } else {
+        GlassBackground
+    }
     SmallFloatingActionButton(
         onClick = onClick,
-        containerColor = GlassBackground,
+        containerColor = containerColor,
         contentColor = Color.White,
         elevation = androidx.compose.material3.FloatingActionButtonDefaults.elevation(
             defaultElevation = 0.dp,

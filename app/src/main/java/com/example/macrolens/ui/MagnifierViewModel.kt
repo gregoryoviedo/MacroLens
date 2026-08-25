@@ -3,6 +3,7 @@ package com.example.macrolens.ui
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
+import androidx.camera.core.FocusMeteringResult
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -29,19 +30,32 @@ enum class CameraError {
     OPEN
 }
 
+enum class FreezeFilter {
+    NONE,
+    GRAYSCALE,
+    INVERTED
+}
+
 data class MagnifierUiState(
     val zoom: Float = 0f,
     val isTorchOn: Boolean = false,
     val hasFlashUnit: Boolean = false,
     val isFrozen: Boolean = false,
     val frozenImage: ImageBitmap? = null,
+    val freezeFilter: FreezeFilter = FreezeFilter.NONE,
     val hasCameraPermission: Boolean = false,
     val minZoomRatio: Float = 1f,
     val maxZoomRatio: Float = 1f,
     val currentZoomRatio: Float = 1f,
     val error: CameraError? = null,
     val focusPoint: Offset? = null,
-    val isFocusing: Boolean = false
+    val isFocusing: Boolean = false,
+    val lastFocusSuccess: Boolean? = null,
+    val lastFocusEventId: Int = 0,
+    val useFrontCamera: Boolean = false,
+    val supportsFrontCamera: Boolean = false,
+    val isReadingLineEnabled: Boolean = false,
+    val readingLineFraction: Float = 0.5f
 )
 
 internal fun zoomRatioForLinearZoom(minRatio: Float, maxRatio: Float, linearZoom: Float): Float {
@@ -61,7 +75,6 @@ class MagnifierViewModel : ViewModel() {
     private val freezeMutex = Mutex()
 
     fun bindCamera(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
-        if (camera != null && boundLifecycleOwner === lifecycleOwner && boundPreviewView === previewView) return
         boundLifecycleOwner = lifecycleOwner
         boundPreviewView = previewView
         val context = previewView.context.applicationContext
@@ -74,25 +87,42 @@ class MagnifierViewModel : ViewModel() {
                 return@addListener
             }
             cameraProvider = provider
+            val supportsFront = try {
+                provider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA)
+            } catch (_: Throwable) {
+                false
+            }
+            val desiredSelector = if (_state.value.useFrontCamera) {
+                CameraSelector.DEFAULT_FRONT_CAMERA
+            } else {
+                CameraSelector.DEFAULT_BACK_CAMERA
+            }
             provider.unbindAll()
             camera = null
             val newPreview = Preview.Builder().build().also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
             }
             val cam = try {
-                provider.bindToLifecycle(
-                    lifecycleOwner,
-                    CameraSelector.DEFAULT_BACK_CAMERA,
-                    newPreview
-                )
+                provider.bindToLifecycle(lifecycleOwner, desiredSelector, newPreview)
             } catch (t: Throwable) {
-                _state.update { it.copy(error = CameraError.OPEN) }
+                _state.update { it.copy(supportsFrontCamera = supportsFront, error = CameraError.OPEN) }
                 return@addListener
             }
             camera = cam
             boundLifecycleOwner = lifecycleOwner
             boundPreviewView = previewView
-            _state.update { it.copy(hasFlashUnit = cam.cameraInfo.hasFlashUnit(), error = null) }
+            _state.update {
+                it.copy(
+                    supportsFrontCamera = supportsFront,
+                    hasFlashUnit = cam.cameraInfo.hasFlashUnit() && !it.useFrontCamera,
+                    isTorchOn = if (it.useFrontCamera) false else it.isTorchOn,
+                    zoom = 0f,
+                    minZoomRatio = 1f,
+                    maxZoomRatio = 1f,
+                    currentZoomRatio = 1f,
+                    error = null
+                )
+            }
             cam.cameraInfo.zoomState.observe(lifecycleOwner) { zs ->
                 if (zs != null) {
                     val newMin = zs.minZoomRatio
@@ -125,6 +155,16 @@ class MagnifierViewModel : ViewModel() {
         onZoomChange(_state.value.zoom + (scale - 1f) * 0.18f)
     }
 
+    fun toggleCamera() {
+        val owner = boundLifecycleOwner
+        val preview = boundPreviewView
+        val target = !_state.value.useFrontCamera
+        _state.update { it.copy(useFrontCamera = target) }
+        if (owner != null && preview != null) {
+            bindCamera(owner, preview)
+        }
+    }
+
     fun retryCamera() {
         val owner = boundLifecycleOwner ?: return
         val preview = boundPreviewView ?: return
@@ -139,6 +179,7 @@ class MagnifierViewModel : ViewModel() {
 
     fun toggleTorch() {
         val cam = camera ?: return
+        if (_state.value.useFrontCamera) return
         val context = boundPreviewView?.context ?: return
         if (!_state.value.hasFlashUnit) return
         val next = !_state.value.isTorchOn
@@ -159,15 +200,19 @@ class MagnifierViewModel : ViewModel() {
             freezeMutex.withLock {
                 val current = _state.value
                 if (current.isFrozen) {
-                    _state.update { it.copy(isFrozen = false, frozenImage = null) }
+                    _state.update { it.copy(isFrozen = false, frozenImage = null, freezeFilter = FreezeFilter.NONE) }
                 } else {
                     val img = withContext(Dispatchers.Main) {
                         previewView.getBitmap()?.asImageBitmap()
                     } ?: return@withLock
-                    _state.update { it.copy(isFrozen = true, frozenImage = img) }
+                    _state.update { it.copy(isFrozen = true, frozenImage = img, freezeFilter = FreezeFilter.NONE) }
                 }
             }
         }
+    }
+
+    fun setFreezeFilter(filter: FreezeFilter) {
+        _state.update { it.copy(freezeFilter = filter) }
     }
 
     fun onPermissionResult(granted: Boolean) {
@@ -189,12 +234,32 @@ class MagnifierViewModel : ViewModel() {
         _state.update { it.copy(focusPoint = Offset(clampedX, clampedY), isFocusing = true) }
         val future = cam.cameraControl.startFocusAndMetering(action)
         future.addListener({
-            _state.update { it.copy(isFocusing = false) }
+            val success: Boolean? = try {
+                future.get().isFocusSuccessful
+            } catch (_: Throwable) {
+                null
+            }
+            _state.update {
+                it.copy(
+                    isFocusing = false,
+                    lastFocusSuccess = success,
+                    lastFocusEventId = it.lastFocusEventId + 1
+                )
+            }
         }, ContextCompat.getMainExecutor(pv.context))
     }
 
     fun clearFocusIndicator() {
         _state.update { it.copy(focusPoint = null, isFocusing = false) }
+    }
+
+    fun setReadingLineEnabled(enabled: Boolean) {
+        _state.update { it.copy(isReadingLineEnabled = enabled) }
+    }
+
+    fun setReadingLineFraction(fraction: Float) {
+        val clamped = fraction.coerceIn(0f, 1f)
+        _state.update { it.copy(readingLineFraction = clamped) }
     }
 
     override fun onCleared() {

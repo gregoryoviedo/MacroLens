@@ -26,4 +26,9 @@
     <string name="close_button">Fechar</string>
     <string name="focus_content_description">Ponto de foco</string>
     <string name="reticle_content_description">Retícula de foco</string>
+    <string name="front_camera_content_description">Alternar câmera</string>
+    <string name="reading_line_content_description">Linha de leitura</string>
+    <string name="filter_none_label">Normal</string>
+    <string name="filter_grayscale_label">P&amp;B</string>
+    <string name="filter_inverted_label">Invertido</string>
 </resources>

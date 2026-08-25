@@ -26,6 +26,11 @@
     <string name="close_button">Close</string>
     <string name="focus_content_description">Focus point</string>
     <string name="reticle_content_description">Focus reticle</string>
+    <string name="front_camera_content_description">Switch camera</string>
+    <string name="reading_line_content_description">Reading line</string>
+    <string name="filter_none_label">Normal</string>
+    <string name="filter_grayscale_label">B&amp;W</string>
+    <string name="filter_inverted_label">Inverted</string>
     <string name="mit_license_text">MIT License
 
 Copyright (c) %1$s %2$s

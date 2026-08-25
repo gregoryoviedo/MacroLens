@@ -26,4 +26,9 @@
     <string name="close_button">Cerrar</string>
     <string name="focus_content_description">Punto de enfoque</string>
     <string name="reticle_content_description">Retícula de enfoque</string>
+    <string name="front_camera_content_description">Cambiar cámara</string>
+    <string name="reading_line_content_description">Línea de lectura</string>
+    <string name="filter_none_label">Normal</string>
+    <string name="filter_grayscale_label">B&amp;N</string>
+    <string name="filter_inverted_label">Invertido</string>
 </resources>
