@@ -1,6 +1,6 @@
-# Lupa Free
+# MacroLens
 
-Lupa Free is a small, open-source Android magnifier focused on privacy, clarity, and everyday accessibility. It has no ads, accounts, analytics, or network permission.
+MacroLens is a small, open-source Android magnifier focused on privacy, clarity, and everyday accessibility. It has no ads, accounts, analytics, or network permission.
 
 ## Features
 
@@ -39,12 +39,12 @@ Screenshots will be added under `docs/screenshots/`.
 ## Project Structure
 
 ```text
-LupaFree/
+MacroLens/
 ├── app/
 │   ├── build.gradle.kts
 │   └── src/
 │       ├── main/
-│       │   ├── java/com/example/lupafree/
+│       │   ├── java/com/example/macrolens/
 │       │   │   ├── MainActivity.kt
 │       │   │   └── ui/
 │       │   │       ├── MagnifierScreen.kt
@@ -93,10 +93,10 @@ Run the Android tests on a connected device or emulator with:
 Release signing reads credentials from `~/.gradle/gradle.properties` or environment variables. Never commit a keystore or passwords.
 
 ```properties
-LUPAFREE_KEYSTORE_PATH=/path/to/lupafree-release.keystore
-LUPAFREE_KEYSTORE_PASSWORD=your-password
-LUPAFREE_KEY_ALIAS=lupafree
-LUPAFREE_KEY_PASSWORD=your-password
+MACROLENS_KEYSTORE_PATH=/path/to/macrolens-release.keystore
+MACROLENS_KEYSTORE_PASSWORD=your-password
+MACROLENS_KEY_ALIAS=macrolens
+MACROLENS_KEY_PASSWORD=your-password
 ```
 
 Build a signed release when the keystore exists:
@@ -110,7 +110,7 @@ The release build enables R8 and resource shrinking. Verify the generated artifa
 
 ## Usage
 
-1. Open Lupa Free and grant camera access.
+1. Open MacroLens and grant camera access.
 2. Adjust zoom with the slider or pinch gesture.
 3. Tap the preview to focus on a specific point.
 4. Use the flashlight button when additional light is needed.
@@ -131,7 +131,7 @@ Donations are supported through Binance Pay.
 
 ## Configuration
 
-The application links are defined in `app/src/main/java/com/example/lupafree/ui/MagnifierScreen.kt`.
+The application links are defined in `app/src/main/java/com/example/macrolens/ui/MagnifierScreen.kt`.
 
 Translations are stored in:
 
@@ -164,11 +164,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build, testing, and design guidelines
 
 ## License
 
-Lupa Free is distributed under the MIT License. See [LICENCE.md](LICENCE.md).
+MacroLens is distributed under the MIT License. See [LICENCE.md](LICENCE.md).
 
 Copyright (c) 2026 Gregory Oviedo.
 
 ## Credits
 
 - CameraX, Jetpack Compose, Material 3, and AndroidX are provided by Google and the Android Open Source Project.
-- The launcher icon is an original minimal vector asset for Lupa Free.
+- The launcher icon is an original asset for MacroLens.

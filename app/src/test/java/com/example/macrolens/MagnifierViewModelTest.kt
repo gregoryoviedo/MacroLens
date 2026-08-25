@@ -1,7 +1,7 @@
-package com.example.lupafree
+package com.example.macrolens
 
-import com.example.lupafree.ui.MagnifierViewModel
-import com.example.lupafree.ui.zoomRatioForLinearZoom
+import com.example.macrolens.ui.MagnifierViewModel
+import com.example.macrolens.ui.zoomRatioForLinearZoom
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

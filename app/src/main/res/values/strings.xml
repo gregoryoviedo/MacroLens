@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Lupa Free</string>
+    <string name="app_name">MacroLens</string>
     <string name="permission_required_message">Camera access is required to use the magnifier.</string>
     <string name="grant_permission_button">Grant permission</string>
     <string name="open_settings_button">Open settings</string>
@@ -18,7 +18,7 @@
     <string name="camera_initialization_error">Could not initialize the camera.</string>
     <string name="camera_open_error">Could not open the camera.</string>
     <string name="retry_camera_button">Retry</string>
-    <string name="donation_dialog_title">Support Lupa Free</string>
+    <string name="donation_dialog_title">Support MacroLens</string>
     <string name="donation_dialog_message">You can support this project through Binance Pay.</string>
     <string name="binance_pay_id">Binance Pay ID: 371811579</string>
     <string name="copy_id_button">Copy ID</string>

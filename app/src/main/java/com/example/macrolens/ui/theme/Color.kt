@@ -1,4 +1,4 @@
-package com.example.lupafree.ui.theme
+package com.example.macrolens.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

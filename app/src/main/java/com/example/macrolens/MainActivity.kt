@@ -1,4 +1,4 @@
-package com.example.lupafree
+package com.example.macrolens
 
 import android.graphics.Color as AndroidColor
 import android.os.Bundle
@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.example.lupafree.ui.MagnifierScreen
-import com.example.lupafree.ui.theme.LupaFreeTheme
+import com.example.macrolens.ui.MagnifierScreen
+import com.example.macrolens.ui.theme.MacroLensTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
         setContent {
-            LupaFreeTheme(darkTheme = true, dynamicColor = false) {
+            MacroLensTheme(darkTheme = true, dynamicColor = false) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Black

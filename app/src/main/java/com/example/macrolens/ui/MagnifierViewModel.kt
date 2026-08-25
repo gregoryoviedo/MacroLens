@@ -1,4 +1,4 @@
-package com.example.lupafree.ui
+package com.example.macrolens.ui
 
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector

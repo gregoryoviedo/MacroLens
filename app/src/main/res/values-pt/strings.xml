@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Lupa Free</string>
+    <string name="app_name">MacroLens</string>
     <string name="permission_required_message">É necessário acesso à câmera para usar a lupa.</string>
     <string name="grant_permission_button">Conceder permissão</string>
     <string name="open_settings_button">Abrir configurações</string>
@@ -18,7 +18,7 @@
     <string name="camera_initialization_error">Não foi possível inicializar a câmera.</string>
     <string name="camera_open_error">Não foi possível abrir a câmera.</string>
     <string name="retry_camera_button">Tentar novamente</string>
-    <string name="donation_dialog_title">Apoie o Lupa Free</string>
+    <string name="donation_dialog_title">Apoie o MacroLens</string>
     <string name="donation_dialog_message">Você pode apoiar este projeto pelo Binance Pay.</string>
     <string name="binance_pay_id">ID do Binance Pay: 371811579</string>
     <string name="copy_id_button">Copiar ID</string>

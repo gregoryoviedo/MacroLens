@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.lupafree"
+    namespace = "com.example.macrolens"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.example.lupafree"
+        applicationId = "com.example.macrolens"
         minSdk = 30
         targetSdk = 36
         versionCode = 1
@@ -19,14 +19,14 @@ android {
 
     signingConfigs {
         create("release") {
-            val ksPath = providers.gradleProperty("LUPAFREE_KEYSTORE_PATH").orNull
-                ?: System.getenv("LUPAFREE_KEYSTORE_PATH")
-            val ksPassword = providers.gradleProperty("LUPAFREE_KEYSTORE_PASSWORD").orNull
-                ?: System.getenv("LUPAFREE_KEYSTORE_PASSWORD")
-            val ksKeyAlias = providers.gradleProperty("LUPAFREE_KEY_ALIAS").orNull
-                ?: System.getenv("LUPAFREE_KEY_ALIAS")
-            val ksKeyPassword = providers.gradleProperty("LUPAFREE_KEY_PASSWORD").orNull
-                ?: System.getenv("LUPAFREE_KEY_PASSWORD")
+            val ksPath = providers.gradleProperty("MACROLENS_KEYSTORE_PATH").orNull
+                ?: System.getenv("MACROLENS_KEYSTORE_PATH")
+            val ksPassword = providers.gradleProperty("MACROLENS_KEYSTORE_PASSWORD").orNull
+                ?: System.getenv("MACROLENS_KEYSTORE_PASSWORD")
+            val ksKeyAlias = providers.gradleProperty("MACROLENS_KEY_ALIAS").orNull
+                ?: System.getenv("MACROLENS_KEY_ALIAS")
+            val ksKeyPassword = providers.gradleProperty("MACROLENS_KEY_PASSWORD").orNull
+                ?: System.getenv("MACROLENS_KEY_PASSWORD")
 
             if (ksPath != null) {
                 storeFile = file(ksPath)

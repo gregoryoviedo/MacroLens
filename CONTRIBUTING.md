@@ -1,4 +1,4 @@
-# Contributing to Lupa Free
+# Contributing to MacroLens
 
 ## Before Opening a Pull Request
 

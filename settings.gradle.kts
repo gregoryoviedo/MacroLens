@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Lupa Free"
+rootProject.name = "MacroLens"
 include(":app")

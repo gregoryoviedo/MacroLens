@@ -1,4 +1,4 @@
-# R8 / ProGuard rules for Lupa Free (release build)
+# R8 / ProGuard rules for MacroLens (release build)
 
 # ---------- CameraX 1.6.x ----------
 # CameraX uses ServiceLoader to discover CameraXConfig.Provider implementations
@@ -47,7 +47,7 @@
 }
 
 # Keep our Application entry point
--keep class com.example.lupafree.MainActivity { *; }
+-keep class com.example.macrolens.MainActivity { *; }
 
 # ---------- Compose ----------
 # Compose ships its own consumer ProGuard rules; no additional rules needed.

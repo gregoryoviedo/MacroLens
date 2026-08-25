@@ -1,4 +1,4 @@
-package com.example.lupafree.ui
+package com.example.macrolens.ui
 
 import android.Manifest
 import android.content.ActivityNotFoundException
@@ -92,7 +92,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.lupafree.R
+import com.example.macrolens.R
 
 private val GlassBackground = Color.Black.copy(alpha = 0.40f)
 private val GlassBorderColor = Color.White.copy(alpha = 0.20f)
@@ -102,7 +102,7 @@ private val SheetContainerColor = Color(0xFF121212)
 private val DialogContainerColor = Color(0xFF1A1A1A)
 
 private object AppLinks {
-    const val GITHUB = "https://github.com/gregoryoviedo/LupaFree"
+    const val GITHUB = "https://github.com/gregoryoviedo/MacroLens"
 }
 
 private const val MIT_LICENSE_YEAR = "2026"

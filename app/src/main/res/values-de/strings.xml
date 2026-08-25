@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Lupa Free</string>
+    <string name="app_name">MacroLens</string>
     <string name="permission_required_message">Für die Lupe wird Kamerazugriff benötigt.</string>
     <string name="grant_permission_button">Berechtigung erteilen</string>
     <string name="open_settings_button">Einstellungen öffnen</string>
@@ -18,7 +18,7 @@
     <string name="camera_initialization_error">Kamera konnte nicht initialisiert werden.</string>
     <string name="camera_open_error">Kamera konnte nicht geöffnet werden.</string>
     <string name="retry_camera_button">Erneut versuchen</string>
-    <string name="donation_dialog_title">Lupa Free unterstützen</string>
+    <string name="donation_dialog_title">MacroLens unterstützen</string>
     <string name="donation_dialog_message">Du kannst dieses Projekt über Binance Pay unterstützen.</string>
     <string name="binance_pay_id">Binance-Pay-ID: 371811579</string>
     <string name="copy_id_button">ID kopieren</string>
